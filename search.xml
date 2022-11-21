@@ -78,6 +78,29 @@ export class CommonApi {
       </tags>
   </entry>
   <entry>
+    <title>数组遍历的实现</title>
+    <url>/2022/02/23/array-traverse-rewrite/index/</url>
+    <content><![CDATA[<h2 id="实现数组的filter方法"><a href="#实现数组的filter方法" class="headerlink" title="实现数组的filter方法"></a>实现数组的filter方法</h2><pre><code class="js">Array.prototype.filter =&gt; (fn) {
+  let arr = [];
+  for (let i = 0; i &lt; this.lenght; i++) {
+    if (fn(this[i], i, this)) {
+      arr.push(this[i])
+    }
+  }
+  return arr;
+}
+</code></pre>
+]]></content>
+      <categories>
+        <category>JS</category>
+      </categories>
+      <tags>
+        <tag>JS</tag>
+        <tag>Array</tag>
+        <tag>遍历</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>手写form组件</title>
     <url>/2022/02/25/form-component/index/</url>
     <content><![CDATA[<h2 id="form组件"><a href="#form组件" class="headerlink" title="form组件"></a>form组件</h2><p>input组件</p>
@@ -319,29 +342,6 @@ export default {
       </tags>
   </entry>
   <entry>
-    <title>数组遍历的实现</title>
-    <url>/2022/02/23/array-traverse-rewrite/index/</url>
-    <content><![CDATA[<h2 id="实现数组的filter方法"><a href="#实现数组的filter方法" class="headerlink" title="实现数组的filter方法"></a>实现数组的filter方法</h2><pre><code class="js">Array.prototype.filter =&gt; (fn) {
-  let arr = [];
-  for (let i = 0; i &lt; this.lenght; i++) {
-    if (fn(this[i], i, this)) {
-      arr.push(this[i])
-    }
-  }
-  return arr;
-}
-</code></pre>
-]]></content>
-      <categories>
-        <category>JS</category>
-      </categories>
-      <tags>
-        <tag>JS</tag>
-        <tag>Array</tag>
-        <tag>遍历</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>前端 JS 编程题（应用类）</title>
     <url>/2021/11/16/js-application/index/</url>
     <content><![CDATA[<h3 id="一、手写防抖（debounce）"><a href="#一、手写防抖（debounce）" class="headerlink" title="一、手写防抖（debounce）"></a>一、手写防抖（debounce）</h3><pre><code class="js">// debounce
@@ -507,87 +507,6 @@ console.log(_.isEqual(x, y))
         <tag>前端</tag>
         <tag>应用</tag>
         <tag>面试题</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>electron（send、sendSync、invoke）主进程与渲染进程通信的区别</title>
-    <url>/2022/04/06/electron-ipc/index/</url>
-    <content><![CDATA[<h2 id="ipcRender-send"><a href="#ipcRender-send" class="headerlink" title="ipcRender.send"></a>ipcRender.send</h2><p>渲染进程 render.js</p>
-<pre><code class="js">// render.js
-const { ipcRenderer } = require(&#39;electron&#39;);
-
-// send 方法发送，并绑定另一个事件接收返回值
-function sendMessageToMain() {
-  ipcRenderer.send(&#39;render-send-to-main&#39;, &#39;我是渲染进程通过 send 发送的消息&#39;);
-}
-ipcRenderer.on(&#39;main-reply-to-render&#39;, (event, message) =&gt; {
-  console.log(&#39;replyMessage&#39;, message); // &#39;replyMessage 主进程通过 reply 回复给渲染进程的消息&#39;
-})
-</code></pre>
-<p>主进程 main.js：</p>
-<pre><code class="js">// main.js
-const { ipcMain } = require(&#39;electron&#39;);
-
-ipcMain.on(&#39;render-send-to-main&#39;, (event, message) =&gt; {
-  console.log(`receive message from render: ${message}`)
-  event.reply(&#39;main-reply-to-render&#39;, &#39;主进程通过 reply 回复给渲染进程的消息&#39;)
-})
-</code></pre>
-<p>1、主进程通过 ipcMain.on 来监听渲染进程的消息<br>2、主进程接收到消息后，可以回复消息，也可以不回复。如果回复的话，通过 event.reply 发送另一个事件，渲染进程监听这个事件得到回复结果。如果不回复消息的话，渲染进程将接着执行 ipcRenderer.send 之后的代码</p>
-<h2 id="ipcRender-sendSync"><a href="#ipcRender-sendSync" class="headerlink" title="ipcRender.sendSync"></a>ipcRender.sendSync</h2><p>渲染进程 render.js：</p>
-<pre><code class="js">// render.js
-const { ipcRenderer } = require(&#39;electron&#39;);
-
-function sendSyncMessageToMain() {
-  const replyMessage = ipcRenderer.sendSync(&#39;render-send-sync-to-main&#39;, &#39;我是渲染进程通过 syncSend 发送给主进程的消息&#39;);
-  console.log(&#39;replyMessage&#39;, replyMessage); // &#39;主进程回复的消息&#39;
-}
-</code></pre>
-<p>主进程 main.js：</p>
-<pre><code class="js">// main.js
-const { ipcMain } = require(&#39;electron&#39;);
-
-ipcMain.on(&#39;render-send-sync-to-main&#39;, (event, message) =&gt; {
-  console.log(`receive message from render: ${message}`)
-  event.returnValue = &#39;主进程回复的消息&#39;;
-})
-</code></pre>
-<p>1、主进程通过 ipcMain.on 来处理渲染进程发送的消息<br>2、主进程通过 event.returnValue 回复渲染进程消息<br>3、如果 event.returnValue 不为 undefined 的话，渲染进程会等待 sendSync 的返回值才执行后面的代码<br>4、请保证 event.returnValue是有值的，否则会造成非预期的影响</p>
-<h2 id="ipcRender-invoke"><a href="#ipcRender-invoke" class="headerlink" title="ipcRender.invoke"></a>ipcRender.invoke</h2><p>渲染进程 render.js：</p>
-<pre><code class="js">// render.js
-const { ipcRenderer } = require(&#39;electron&#39;);
-
-async function invokeMessageToMain() {
-  const replyMessage = await ipcRenderer.invoke(&#39;render-invoke-to-main&#39;, &#39;我是渲染进程通过 invoke 发送的消息&#39;);
-  console.log(&#39;replyMessage&#39;, replyMessage);
-}
-</code></pre>
-<p>主进程 main.js：</p>
-<pre><code class="js">// main.js
-const { ipcMain } = require(&#39;electron&#39;);
-
-ipcMain.handle(&#39;render-invoke-to-main&#39;, async (event, message) =&gt; {
-  console.log(`receive message from render: ${message}`)
-  const result = await asyncWork();
-  return result;
-})
-
-const asyncWork = async () =&gt; {
-  return new Promise(resolve =&gt; {
-    setTimeout(() =&gt; {
-      resolve(&#39;延迟 2 秒获取到主进程的返回结果&#39;)
-    }, 2000)
-  })
-}
-</code></pre>
-<p>1、主进程通过 ipcMain.handle 来处理渲染进程发送的消息<br>2、主进程接收到消息后，可以回复消息，也可以不回复。如果回复消息的话，可以通过 return 给渲染进程回复消息；如果不回复消息的话，渲染进程将接着执行 ipcRenderer.invoke 之后的代码<br>3、渲染进程异步等待主进程的回应， invoke 的返回值是一个 Promise</p>
-]]></content>
-      <categories>
-        <category>笔记</category>
-      </categories>
-      <tags>
-        <tag>electron</tag>
-        <tag>通信</tag>
       </tags>
   </entry>
   <entry>
@@ -859,6 +778,87 @@ console.log(arr1.flat(3)); // 3 代表数组内最多嵌套层数
       </tags>
   </entry>
   <entry>
+    <title>electron（send、sendSync、invoke）主进程与渲染进程通信的区别</title>
+    <url>/2022/04/06/electron-ipc/index/</url>
+    <content><![CDATA[<h2 id="ipcRender-send"><a href="#ipcRender-send" class="headerlink" title="ipcRender.send"></a>ipcRender.send</h2><p>渲染进程 render.js</p>
+<pre><code class="js">// render.js
+const { ipcRenderer } = require(&#39;electron&#39;);
+
+// send 方法发送，并绑定另一个事件接收返回值
+function sendMessageToMain() {
+  ipcRenderer.send(&#39;render-send-to-main&#39;, &#39;我是渲染进程通过 send 发送的消息&#39;);
+}
+ipcRenderer.on(&#39;main-reply-to-render&#39;, (event, message) =&gt; {
+  console.log(&#39;replyMessage&#39;, message); // &#39;replyMessage 主进程通过 reply 回复给渲染进程的消息&#39;
+})
+</code></pre>
+<p>主进程 main.js：</p>
+<pre><code class="js">// main.js
+const { ipcMain } = require(&#39;electron&#39;);
+
+ipcMain.on(&#39;render-send-to-main&#39;, (event, message) =&gt; {
+  console.log(`receive message from render: ${message}`)
+  event.reply(&#39;main-reply-to-render&#39;, &#39;主进程通过 reply 回复给渲染进程的消息&#39;)
+})
+</code></pre>
+<p>1、主进程通过 ipcMain.on 来监听渲染进程的消息<br>2、主进程接收到消息后，可以回复消息，也可以不回复。如果回复的话，通过 event.reply 发送另一个事件，渲染进程监听这个事件得到回复结果。如果不回复消息的话，渲染进程将接着执行 ipcRenderer.send 之后的代码</p>
+<h2 id="ipcRender-sendSync"><a href="#ipcRender-sendSync" class="headerlink" title="ipcRender.sendSync"></a>ipcRender.sendSync</h2><p>渲染进程 render.js：</p>
+<pre><code class="js">// render.js
+const { ipcRenderer } = require(&#39;electron&#39;);
+
+function sendSyncMessageToMain() {
+  const replyMessage = ipcRenderer.sendSync(&#39;render-send-sync-to-main&#39;, &#39;我是渲染进程通过 syncSend 发送给主进程的消息&#39;);
+  console.log(&#39;replyMessage&#39;, replyMessage); // &#39;主进程回复的消息&#39;
+}
+</code></pre>
+<p>主进程 main.js：</p>
+<pre><code class="js">// main.js
+const { ipcMain } = require(&#39;electron&#39;);
+
+ipcMain.on(&#39;render-send-sync-to-main&#39;, (event, message) =&gt; {
+  console.log(`receive message from render: ${message}`)
+  event.returnValue = &#39;主进程回复的消息&#39;;
+})
+</code></pre>
+<p>1、主进程通过 ipcMain.on 来处理渲染进程发送的消息<br>2、主进程通过 event.returnValue 回复渲染进程消息<br>3、如果 event.returnValue 不为 undefined 的话，渲染进程会等待 sendSync 的返回值才执行后面的代码<br>4、请保证 event.returnValue是有值的，否则会造成非预期的影响</p>
+<h2 id="ipcRender-invoke"><a href="#ipcRender-invoke" class="headerlink" title="ipcRender.invoke"></a>ipcRender.invoke</h2><p>渲染进程 render.js：</p>
+<pre><code class="js">// render.js
+const { ipcRenderer } = require(&#39;electron&#39;);
+
+async function invokeMessageToMain() {
+  const replyMessage = await ipcRenderer.invoke(&#39;render-invoke-to-main&#39;, &#39;我是渲染进程通过 invoke 发送的消息&#39;);
+  console.log(&#39;replyMessage&#39;, replyMessage);
+}
+</code></pre>
+<p>主进程 main.js：</p>
+<pre><code class="js">// main.js
+const { ipcMain } = require(&#39;electron&#39;);
+
+ipcMain.handle(&#39;render-invoke-to-main&#39;, async (event, message) =&gt; {
+  console.log(`receive message from render: ${message}`)
+  const result = await asyncWork();
+  return result;
+})
+
+const asyncWork = async () =&gt; {
+  return new Promise(resolve =&gt; {
+    setTimeout(() =&gt; {
+      resolve(&#39;延迟 2 秒获取到主进程的返回结果&#39;)
+    }, 2000)
+  })
+}
+</code></pre>
+<p>1、主进程通过 ipcMain.handle 来处理渲染进程发送的消息<br>2、主进程接收到消息后，可以回复消息，也可以不回复。如果回复消息的话，可以通过 return 给渲染进程回复消息；如果不回复消息的话，渲染进程将接着执行 ipcRenderer.invoke 之后的代码<br>3、渲染进程异步等待主进程的回应， invoke 的返回值是一个 Promise</p>
+]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>electron</tag>
+        <tag>通信</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>前端 JS 编程题（原理类）</title>
     <url>/2021/11/14/js-principle/index/</url>
     <content><![CDATA[<h3 id="一、-深拷贝"><a href="#一、-深拷贝" class="headerlink" title="一、 深拷贝"></a>一、 深拷贝</h3><pre><code class="js">// deepClone
@@ -1076,93 +1076,6 @@ console.log(123 instanceof Object) // false
       </tags>
   </entry>
   <entry>
-    <title>手写notice弹窗组件</title>
-    <url>/2022/02/25/notice-component/index/</url>
-    <content><![CDATA[<h2 id="手写notice弹窗组件"><a href="#手写notice弹窗组件" class="headerlink" title="手写notice弹窗组件"></a>手写notice弹窗组件</h2><p>notice.vue</p>
-<pre><code class="vue">&lt;template&gt;
-  &lt;div v-if=&quot;isShow&quot;&gt;
-    &lt;p&gt;{{title}}&lt;/p&gt;
-    &lt;p&gt;{{text}}&lt;/p&gt;
-  &lt;/div&gt;
-&lt;/template&gt;
-&lt;script&gt;
-export default {
-  props: {
-    title: {
-      type: String,
-      default: &#39;&#39;
-    },
-    text: {
-      type: String,
-      default: &#39;&#39;
-    },
-    time: {
-      type: Number,
-      default: 0
-    }
-  },
-  data() {
-    return {
-      isShow: false
-    }
-  },
-  methods: {
-    show() {
-      this.isShow = true;
-      this.time &amp;&amp; setTimeout(() =&gt; {
-        this.hide();
-      }, this.time)
-    },
-    hide() {
-      this.isShow = false;
-      this.remove();
-    }
-  }
-}
-&lt;/script&gt;
-</code></pre>
-<p>create.js</p>
-<pre><code class="js">import Vue from &quot;vue&quot;;
-
-export default function create(component, props) {
-  // 创建vue实例
-  const vm = new Vue({
-    render(h) {
-      return h(component, {props})
-    }
-  }).$mount();
-  // 获取组件实例
-  const comp = vm.$children[0];
-  // 组件实例追加到body
-  document.body.appendChild(vm.$el);
-  // 清理函数
-  comp.remove = () =&gt; {
-    document.body.removeChild(vm.$el);
-    vm.$destroy();
-  }
-  // 返回组件实例
-  return comp;
-}
-</code></pre>
-<p>使用notice组件</p>
-<pre><code class="js">const notice = Create(Notice, {
-  title: &#39;登录&#39;,
-  text: &#39;正确！&#39;,
-  time: 3000
-})
-notice.show();
-</code></pre>
-]]></content>
-      <categories>
-        <category>notice弹窗组件</category>
-      </categories>
-      <tags>
-        <tag>组件</tag>
-        <tag>notice</tag>
-        <tag>弹窗</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>笔记</title>
     <url>/2022/02/23/note/index/</url>
     <content><![CDATA[<h2 id="组件通信"><a href="#组件通信" class="headerlink" title="组件通信"></a>组件通信</h2><h3 id="父-gt-子"><a href="#父-gt-子" class="headerlink" title="父 =&gt; 子"></a>父 =&gt; 子</h3><p> props</p>
@@ -1295,216 +1208,90 @@ this.$bus.$emit(&#39;foo&#39;, &#39;msg&#39;)
       </tags>
   </entry>
   <entry>
-    <title>vite配置全局svg图标</title>
-    <url>/2022/04/07/svg-vite/index/</url>
-    <content><![CDATA[<h2 id="vite-config-ts配置"><a href="#vite-config-ts配置" class="headerlink" title="vite.config.ts配置"></a>vite.config.ts配置</h2><pre><code class="js">import path from &#39;path&#39;;
-import { createSvgIconsPlugin } from &#39;vite-plugin-svg-icons&#39;;
-export default defineConfig(env =&gt; {
-  return {
-    plugins: [
-      createSvgIconsPlugin({
-        // 指定要缓存的图标文件夹
-        iconDirs: [path.resolve(process.cwd(), &#39;src/render/assets/svg&#39;)],
-        // 执行icon name的格式
-        symbolId: &#39;icon-[dir]-[name]&#39;,
-      })
-    ]
-  }
-})
-</code></pre>
-<h2 id="SvgIcon-vue"><a href="#SvgIcon-vue" class="headerlink" title="SvgIcon.vue"></a>SvgIcon.vue</h2><pre><code class="vue">&lt;template&gt;
-  &lt;svg :class=&quot;svgClass&quot; aria-hidden=&quot;true&quot;&gt;
-    &lt;use :xlink:href=&quot;iconName&quot; :fill=&quot;color&quot; /&gt;
-  &lt;/svg&gt;
-&lt;/template&gt;
-
-&lt;script lang=&quot;ts&quot;&gt;
-import { defineComponent, computed } from &#39;vue&#39;;
-export default defineComponent({
-  props: {
-    iconClass: {
-      type: String,
-      required: true
-    },
-    className: {
-      type: String,
-      default: &#39;&#39;
-    },
-    color: {
-      type: String,
-      default: &#39;&#39;
-    },
-  },
-  setup(props) {
-    return {
-      iconName: computed(() =&gt; `#icon-${props.iconClass}`),
-      svgClass: computed(() =&gt; {
-        if (props.className) {
-          return `svg-icon ${props.className}`
-        }
-        return &#39;svg-icon&#39;
-      })
-    }
-  }
-})
-&lt;/script&gt;
-
-&lt;style scoped&gt;
-.svg-icon {
-  width: 1em;
-  height: 1em;
-  position: relative;
-  fill: currentColor;
-  vertical-align: -2px;
-}
-&lt;/style&gt;
-</code></pre>
-<h2 id="main-js-引用SvgIcon-vue"><a href="#main-js-引用SvgIcon-vue" class="headerlink" title="main.js 引用SvgIcon.vue"></a>main.js 引用SvgIcon.vue</h2><pre><code class="js">import { createApp } from &#39;vue&#39;
-import App from &#39;./App.vue&#39;
-import &#39;virtual:svg-icons-register&#39;;
-import SvgIcon from &#39;@/render/components/svgIcon/SvgIcon.vue&#39;;
-const app = createApp(App);
-app.component(&#39;svg-icon&#39;,SvgIcon);
-</code></pre>
-<h2 id="home-vue-使用SvgIcon"><a href="#home-vue-使用SvgIcon" class="headerlink" title="home.vue 使用SvgIcon"></a>home.vue 使用SvgIcon</h2><pre><code class="vue">&lt;template&gt;
-  &lt;div class=&quot;home&quot;&gt;
-    &lt;svg-icon iconClass=&quot;noNet&quot; className=&quot;className&quot; /&gt;
+    <title>手写notice弹窗组件</title>
+    <url>/2022/02/25/notice-component/index/</url>
+    <content><![CDATA[<h2 id="手写notice弹窗组件"><a href="#手写notice弹窗组件" class="headerlink" title="手写notice弹窗组件"></a>手写notice弹窗组件</h2><p>notice.vue</p>
+<pre><code class="vue">&lt;template&gt;
+  &lt;div v-if=&quot;isShow&quot;&gt;
+    &lt;p&gt;{{title}}&lt;/p&gt;
+    &lt;p&gt;{{text}}&lt;/p&gt;
   &lt;/div&gt;
 &lt;/template&gt;
-</code></pre>
-]]></content>
-      <categories>
-        <category>笔记</category>
-      </categories>
-      <tags>
-        <tag>vite</tag>
-        <tag>svg</tag>
-        <tag>图标</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>viewPort适配移动端</title>
-    <url>/2020/04/07/viewPort/index/</url>
-    <content><![CDATA[<h3 id="PostCSS-基本插件"><a href="#PostCSS-基本插件" class="headerlink" title="PostCSS 基本插件"></a>PostCSS 基本插件</h3><p>默认安装vue-cli 脚手架</p>
-<pre><code class="js">module.exports = {
-   &quot;plugins&quot;: {
-   &quot;postcss-import&quot;: {},
-        &quot;postcss-url&quot;: {},
-        // to edit target browsers: use &quot;browserslist&quot; field in package.json
-        &quot;autoprefixer&quot;: {}
-    }
-}
-</code></pre>
-<h3 id="PostCSS-其他插件"><a href="#PostCSS-其他插件" class="headerlink" title="PostCSS 其他插件"></a>PostCSS 其他插件</h3><p>安装其他插件</p>
-<pre><code class="bash">npm i postcss-aspect-ratio-mini postcss-px-to-viewport postcss-write-svg postcss-cssnext postcss-viewport-units cssnano --S
-</code></pre>
-<p>安装成功之后 package.json 显示：</p>
-<pre><code class="js">&quot;dependencies&quot;: {
-    &quot;axios&quot;: &quot;^0.18.0&quot;,
-    &quot;cssnano&quot;: &quot;^4.1.0&quot;,
-    &quot;postcss-aspect-ratio-mini&quot;: &quot;0.0.2&quot;,
-    &quot;postcss-cssnext&quot;: &quot;^3.1.0&quot;,
-    &quot;postcss-px-to-viewport&quot;: &quot;0.0.3&quot;,
-    &quot;postcss-viewport-units&quot;: &quot;^0.1.4&quot;,
-    &quot;postcss-write-svg&quot;: &quot;^3.0.1&quot;,
-    &quot;vue&quot;: &quot;^2.5.2&quot;,
-    &quot;vue-router&quot;: &quot;^3.0.1&quot;,
-    &quot;vuex&quot;: &quot;^3.0.1&quot; 
-}
-</code></pre>
-<h3 id="postcssrc-js-文件设置"><a href="#postcssrc-js-文件设置" class="headerlink" title=".postcssrc.js 文件设置"></a>.postcssrc.js 文件设置</h3><p>脚手架原有的三个配置项需要注释 autoprefixer ，理由是 cssnano 中已经具有此配置</p>
-<pre><code class="js">module.exports = {
-    &quot;plugins&quot;: {
-        &quot;postcss-import&quot;: {},
-        &quot;postcss-url&quot;: {},
-        // to edit target browsers: use &quot;browserslist&quot; field in package.json
-        // &quot;autoprefixer&quot;: {}, 
-        &quot;postcss-aspect-ratio-mini&quot;: {},
-        &quot;postcss-write-svg&quot;: {
-            utf8: false
-        },
-        &quot;postcss-cssnext&quot;: {},
-        &quot;postcss-px-to-viewport&quot;: {
-            viewportWidth: 750, // 视窗的宽度，对应的是我们设计稿的宽度，一般是750
-            // viewportHeight: 1334, // 视窗的高度，根据750设备的宽度来指定，一般指定1334，也可以不设置
-            unitPrecision: 3, // 指定`px`转换为视窗单位值的小数位数（很多时候无法整除）
-            viewportUnit: &#39;vw&#39;, // 指定需要转换成的视窗单位，建议使用vw
-            selectorBlackList: [&#39;.ignore&#39;, &#39;.hairlines&#39;], // 指定不转换为视窗单位的类，可以自定义， 可以无限添加,建议定义一至两个通用的类名 
-            minPixelValue: 1, // 小于或等于`1px`不转换为视窗单位，你也可以设置为你想要的值
-            mediaQuery: false // 允许在媒体查询中转换`px`
-        },
-        &quot;postcss-viewport-units&quot;: {},
-        &quot;cssnano&quot;: {
-            preset: &quot;advanced&quot;,
-            autoprefixer: false,
-            &quot;postcss-zindex&quot;: false
-        }
-    }
-}
-</code></pre>
-<h3 id="cssnano-插件安装"><a href="#cssnano-插件安装" class="headerlink" title="cssnano 插件安装"></a>cssnano 插件安装</h3><p>在配置中我们使用了 preset: “advanced” ，所以还需要安装</p>
-<pre><code class="bash">npm i cssnano-preset-advanced --save-dev
-</code></pre>
-<p>基本配置</p>
-<pre><code class="js">&quot;cssnano&quot;: {
-    preset: &quot;advanced&quot;,
-    autoprefixer: false,
-    &quot;postcss-zindex&quot;: false
-}
-</code></pre>
-<h3 id="postcss-px-to-viewport"><a href="#postcss-px-to-viewport" class="headerlink" title="postcss-px-to-viewport"></a>postcss-px-to-viewport</h3><p>这是核心的插件，帮助我们将 px 转成 vw、vh、vmin、vmax<br>目前出视觉设计稿，都是使用 750px，那么 100vw = 750px，即 1vw = 7.5px。那么我们根据设计图上 的px 值直接转换成对于的 vw 值。实际撸码过程中，不需要做任何计算，直接在代码中写 px 即可</p>
-]]></content>
-      <categories>
-        <category>VUE</category>
-        <category>移动端</category>
-      </categories>
-      <tags>
-        <tag>VUE</tag>
-        <tag>移动端</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>vue异步更新机制</title>
-    <url>/2022/02/21/vue-asynchronous-update-mechanism/index/</url>
-    <content><![CDATA[<h2 id="vue异步更新机制"><a href="#vue异步更新机制" class="headerlink" title="vue异步更新机制"></a>vue异步更新机制</h2><p>vue中更新dom是异步执行的，只要侦听到数据变化，Vue 将开启一个队列，并缓冲在同一事件循环中发生的所有数据变更。如果同一个 watcher 被多次触发，只会被推入到队列中一次。（先缓冲，缓冲后再将多次触发属性的最后一次作为promise放入队列；而不是一上来就放队列）</p>
-<p>vue中数据的更新到dom是异步的，数据的异步更新可以理解成一个promise的微任务；并且对同一个属性值进行多次赋值时，只有最后一次赋值会作为一个promise微任务放到更新队列。</p>
-<pre><code class="vue">&lt;template&gt;
-  &lt;div id=&quot;example&quot;&gt;{{message}}&lt;/div&gt;
-&lt;/template&gt;
 &lt;script&gt;
-  var vm = new Vue({
-    el: &#39;#example&#39;,
-    data: {
-      message: &#39;123&#39;
+export default {
+  props: {
+    title: {
+      type: String,
+      default: &#39;&#39;
+    },
+    text: {
+      type: String,
+      default: &#39;&#39;
+    },
+    time: {
+      type: Number,
+      default: 0
     }
-  })
-
-  Promise.resolve(1).then(value =&gt; {
-    console.log(&quot;xxx&quot;, vm.$el.textContent);     // 第二步输出：123
-  })
-
-  vm.message = &#39;msg&#39; // 更改数据
-
-  Promise.resolve(2).then(value =&gt; {
-    console.log(&quot;测试&quot;, vm.$el.textContent);  // 第三步输出：new
-  })
-
-  vm.message = &#39;new&#39; // 更改数据
-
-  Promise.resolve(3).then(value =&gt; {
-    console.log(&quot;fff&quot;, vm.$el.textContent);         // 第四步输出：new
-  })
-
-  console.log(vm.$el.textContent);          // 第一步输出：123
+  },
+  data() {
+    return {
+      isShow: false
+    }
+  },
+  methods: {
+    show() {
+      this.isShow = true;
+      this.time &amp;&amp; setTimeout(() =&gt; {
+        this.hide();
+      }, this.time)
+    },
+    hide() {
+      this.isShow = false;
+      this.remove();
+    }
+  }
+}
 &lt;/script&gt;
 </code></pre>
+<p>create.js</p>
+<pre><code class="js">import Vue from &quot;vue&quot;;
+
+export default function create(component, props) {
+  // 创建vue实例
+  const vm = new Vue({
+    render(h) {
+      return h(component, {props})
+    }
+  }).$mount();
+  // 获取组件实例
+  const comp = vm.$children[0];
+  // 组件实例追加到body
+  document.body.appendChild(vm.$el);
+  // 清理函数
+  comp.remove = () =&gt; {
+    document.body.removeChild(vm.$el);
+    vm.$destroy();
+  }
+  // 返回组件实例
+  return comp;
+}
+</code></pre>
+<p>使用notice组件</p>
+<pre><code class="js">const notice = Create(Notice, {
+  title: &#39;登录&#39;,
+  text: &#39;正确！&#39;,
+  time: 3000
+})
+notice.show();
+</code></pre>
 ]]></content>
       <categories>
-        <category>VUE</category>
+        <category>notice弹窗组件</category>
       </categories>
       <tags>
-        <tag>VUE</tag>
-        <tag>异步更新机制</tag>
+        <tag>组件</tag>
+        <tag>notice</tag>
+        <tag>弹窗</tag>
       </tags>
   </entry>
   <entry>
@@ -1611,9 +1398,178 @@ export default class HomeView extends Vue {}
         <category>笔记</category>
       </categories>
       <tags>
+        <tag>webpack</tag>
         <tag>svg</tag>
         <tag>图标</tag>
-        <tag>webpack</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>vite配置全局svg图标</title>
+    <url>/2022/04/07/svg-vite/index/</url>
+    <content><![CDATA[<h2 id="vite-config-ts配置"><a href="#vite-config-ts配置" class="headerlink" title="vite.config.ts配置"></a>vite.config.ts配置</h2><pre><code class="js">import path from &#39;path&#39;;
+import { createSvgIconsPlugin } from &#39;vite-plugin-svg-icons&#39;;
+export default defineConfig(env =&gt; {
+  return {
+    plugins: [
+      createSvgIconsPlugin({
+        // 指定要缓存的图标文件夹
+        iconDirs: [path.resolve(process.cwd(), &#39;src/render/assets/svg&#39;)],
+        // 执行icon name的格式
+        symbolId: &#39;icon-[dir]-[name]&#39;,
+      })
+    ]
+  }
+})
+</code></pre>
+<h2 id="SvgIcon-vue"><a href="#SvgIcon-vue" class="headerlink" title="SvgIcon.vue"></a>SvgIcon.vue</h2><pre><code class="vue">&lt;template&gt;
+  &lt;svg :class=&quot;svgClass&quot; aria-hidden=&quot;true&quot;&gt;
+    &lt;use :xlink:href=&quot;iconName&quot; :fill=&quot;color&quot; /&gt;
+  &lt;/svg&gt;
+&lt;/template&gt;
+
+&lt;script lang=&quot;ts&quot;&gt;
+import { defineComponent, computed } from &#39;vue&#39;;
+export default defineComponent({
+  props: {
+    iconClass: {
+      type: String,
+      required: true
+    },
+    className: {
+      type: String,
+      default: &#39;&#39;
+    },
+    color: {
+      type: String,
+      default: &#39;&#39;
+    },
+  },
+  setup(props) {
+    return {
+      iconName: computed(() =&gt; `#icon-${props.iconClass}`),
+      svgClass: computed(() =&gt; {
+        if (props.className) {
+          return `svg-icon ${props.className}`
+        }
+        return &#39;svg-icon&#39;
+      })
+    }
+  }
+})
+&lt;/script&gt;
+
+&lt;style scoped&gt;
+.svg-icon {
+  width: 1em;
+  height: 1em;
+  position: relative;
+  fill: currentColor;
+  vertical-align: -2px;
+}
+&lt;/style&gt;
+</code></pre>
+<h2 id="main-js-引用SvgIcon-vue"><a href="#main-js-引用SvgIcon-vue" class="headerlink" title="main.js 引用SvgIcon.vue"></a>main.js 引用SvgIcon.vue</h2><pre><code class="js">import { createApp } from &#39;vue&#39;
+import App from &#39;./App.vue&#39;
+import &#39;virtual:svg-icons-register&#39;;
+import SvgIcon from &#39;@/render/components/svgIcon/SvgIcon.vue&#39;;
+const app = createApp(App);
+app.component(&#39;svg-icon&#39;,SvgIcon);
+</code></pre>
+<h2 id="home-vue-使用SvgIcon"><a href="#home-vue-使用SvgIcon" class="headerlink" title="home.vue 使用SvgIcon"></a>home.vue 使用SvgIcon</h2><pre><code class="vue">&lt;template&gt;
+  &lt;div class=&quot;home&quot;&gt;
+    &lt;svg-icon iconClass=&quot;noNet&quot; className=&quot;className&quot; /&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+</code></pre>
+]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>svg</tag>
+        <tag>图标</tag>
+        <tag>vite</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>viewPort适配移动端</title>
+    <url>/2020/04/07/viewPort/index/</url>
+    <content><![CDATA[<h3 id="PostCSS-基本插件"><a href="#PostCSS-基本插件" class="headerlink" title="PostCSS 基本插件"></a>PostCSS 基本插件</h3><p>默认安装vue-cli 脚手架</p>
+<pre><code class="js">module.exports = {
+   &quot;plugins&quot;: {
+   &quot;postcss-import&quot;: {},
+        &quot;postcss-url&quot;: {},
+        // to edit target browsers: use &quot;browserslist&quot; field in package.json
+        &quot;autoprefixer&quot;: {}
+    }
+}
+</code></pre>
+<h3 id="PostCSS-其他插件"><a href="#PostCSS-其他插件" class="headerlink" title="PostCSS 其他插件"></a>PostCSS 其他插件</h3><p>安装其他插件</p>
+<pre><code class="bash">npm i postcss-aspect-ratio-mini postcss-px-to-viewport postcss-write-svg postcss-cssnext postcss-viewport-units cssnano --S
+</code></pre>
+<p>安装成功之后 package.json 显示：</p>
+<pre><code class="js">&quot;dependencies&quot;: {
+    &quot;axios&quot;: &quot;^0.18.0&quot;,
+    &quot;cssnano&quot;: &quot;^4.1.0&quot;,
+    &quot;postcss-aspect-ratio-mini&quot;: &quot;0.0.2&quot;,
+    &quot;postcss-cssnext&quot;: &quot;^3.1.0&quot;,
+    &quot;postcss-px-to-viewport&quot;: &quot;0.0.3&quot;,
+    &quot;postcss-viewport-units&quot;: &quot;^0.1.4&quot;,
+    &quot;postcss-write-svg&quot;: &quot;^3.0.1&quot;,
+    &quot;vue&quot;: &quot;^2.5.2&quot;,
+    &quot;vue-router&quot;: &quot;^3.0.1&quot;,
+    &quot;vuex&quot;: &quot;^3.0.1&quot; 
+}
+</code></pre>
+<h3 id="postcssrc-js-文件设置"><a href="#postcssrc-js-文件设置" class="headerlink" title=".postcssrc.js 文件设置"></a>.postcssrc.js 文件设置</h3><p>脚手架原有的三个配置项需要注释 autoprefixer ，理由是 cssnano 中已经具有此配置</p>
+<pre><code class="js">module.exports = {
+    &quot;plugins&quot;: {
+        &quot;postcss-import&quot;: {},
+        &quot;postcss-url&quot;: {},
+        // to edit target browsers: use &quot;browserslist&quot; field in package.json
+        // &quot;autoprefixer&quot;: {}, 
+        &quot;postcss-aspect-ratio-mini&quot;: {},
+        &quot;postcss-write-svg&quot;: {
+            utf8: false
+        },
+        &quot;postcss-cssnext&quot;: {},
+        &quot;postcss-px-to-viewport&quot;: {
+            viewportWidth: 750, // 视窗的宽度，对应的是我们设计稿的宽度，一般是750
+            // viewportHeight: 1334, // 视窗的高度，根据750设备的宽度来指定，一般指定1334，也可以不设置
+            unitPrecision: 3, // 指定`px`转换为视窗单位值的小数位数（很多时候无法整除）
+            viewportUnit: &#39;vw&#39;, // 指定需要转换成的视窗单位，建议使用vw
+            selectorBlackList: [&#39;.ignore&#39;, &#39;.hairlines&#39;], // 指定不转换为视窗单位的类，可以自定义， 可以无限添加,建议定义一至两个通用的类名 
+            minPixelValue: 1, // 小于或等于`1px`不转换为视窗单位，你也可以设置为你想要的值
+            mediaQuery: false // 允许在媒体查询中转换`px`
+        },
+        &quot;postcss-viewport-units&quot;: {},
+        &quot;cssnano&quot;: {
+            preset: &quot;advanced&quot;,
+            autoprefixer: false,
+            &quot;postcss-zindex&quot;: false
+        }
+    }
+}
+</code></pre>
+<h3 id="cssnano-插件安装"><a href="#cssnano-插件安装" class="headerlink" title="cssnano 插件安装"></a>cssnano 插件安装</h3><p>在配置中我们使用了 preset: “advanced” ，所以还需要安装</p>
+<pre><code class="bash">npm i cssnano-preset-advanced --save-dev
+</code></pre>
+<p>基本配置</p>
+<pre><code class="js">&quot;cssnano&quot;: {
+    preset: &quot;advanced&quot;,
+    autoprefixer: false,
+    &quot;postcss-zindex&quot;: false
+}
+</code></pre>
+<h3 id="postcss-px-to-viewport"><a href="#postcss-px-to-viewport" class="headerlink" title="postcss-px-to-viewport"></a>postcss-px-to-viewport</h3><p>这是核心的插件，帮助我们将 px 转成 vw、vh、vmin、vmax<br>目前出视觉设计稿，都是使用 750px，那么 100vw = 750px，即 1vw = 7.5px。那么我们根据设计图上 的px 值直接转换成对于的 vw 值。实际撸码过程中，不需要做任何计算，直接在代码中写 px 即可</p>
+]]></content>
+      <categories>
+        <category>VUE</category>
+        <category>移动端</category>
+      </categories>
+      <tags>
+        <tag>VUE</tag>
+        <tag>移动端</tag>
       </tags>
   </entry>
   <entry>
@@ -1657,6 +1613,50 @@ export default class HomeView extends Vue {}
         <tag>element</tag>
         <tag>table</tag>
         <tag>滚动加载</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>vue异步更新机制</title>
+    <url>/2022/02/21/vue-asynchronous-update-mechanism/index/</url>
+    <content><![CDATA[<h2 id="vue异步更新机制"><a href="#vue异步更新机制" class="headerlink" title="vue异步更新机制"></a>vue异步更新机制</h2><p>vue中更新dom是异步执行的，只要侦听到数据变化，Vue 将开启一个队列，并缓冲在同一事件循环中发生的所有数据变更。如果同一个 watcher 被多次触发，只会被推入到队列中一次。（先缓冲，缓冲后再将多次触发属性的最后一次作为promise放入队列；而不是一上来就放队列）</p>
+<p>vue中数据的更新到dom是异步的，数据的异步更新可以理解成一个promise的微任务；并且对同一个属性值进行多次赋值时，只有最后一次赋值会作为一个promise微任务放到更新队列。</p>
+<pre><code class="vue">&lt;template&gt;
+  &lt;div id=&quot;example&quot;&gt;{{message}}&lt;/div&gt;
+&lt;/template&gt;
+&lt;script&gt;
+  var vm = new Vue({
+    el: &#39;#example&#39;,
+    data: {
+      message: &#39;123&#39;
+    }
+  })
+
+  Promise.resolve(1).then(value =&gt; {
+    console.log(&quot;xxx&quot;, vm.$el.textContent);     // 第二步输出：123
+  })
+
+  vm.message = &#39;msg&#39; // 更改数据
+
+  Promise.resolve(2).then(value =&gt; {
+    console.log(&quot;测试&quot;, vm.$el.textContent);  // 第三步输出：new
+  })
+
+  vm.message = &#39;new&#39; // 更改数据
+
+  Promise.resolve(3).then(value =&gt; {
+    console.log(&quot;fff&quot;, vm.$el.textContent);         // 第四步输出：new
+  })
+
+  console.log(vm.$el.textContent);          // 第一步输出：123
+&lt;/script&gt;
+</code></pre>
+]]></content>
+      <categories>
+        <category>VUE</category>
+      </categories>
+      <tags>
+        <tag>VUE</tag>
+        <tag>异步更新机制</tag>
       </tags>
   </entry>
   <entry>
